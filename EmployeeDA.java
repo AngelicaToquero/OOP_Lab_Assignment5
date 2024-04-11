@@ -6,14 +6,9 @@ public class EmployeeDA {
     private Employee employee;
 
     EmployeeDA(String empNo) {
-        this.employee = readEmployee(empNo);
+        this.employee = readEmp(empNo);
     }
-    
-    public Employee getEmployee() {
-        return employee;
-    }
-
-    public Employee readEmployee(String empNo) {
+    public Employee readEmp(String empNo) {
         Employee emp = new Employee();
         try {
             Scanner employeeFile = new Scanner(new FileReader("emp.csv"));
@@ -25,10 +20,8 @@ public class EmployeeDA {
                     emp.setEmpNo(empArr[0].trim());
                     emp.setLastName(empArr[1].trim());
                     emp.setFirstName(empArr[2].trim());
-                    break;
                 }
             }
-            employeeFile.close();
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
         }
