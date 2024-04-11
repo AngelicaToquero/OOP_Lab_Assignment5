@@ -58,7 +58,7 @@ public class DepartmentDA {
         }
     }
 
-    public void displayReports() {
+    public void displayReport() {
         for (Map.Entry<String, Department> entry : departmentMap.entrySet()) {
             Department department = entry.getValue();
             readDepEmp(department);
