@@ -1,85 +1,70 @@
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Scanner;
+import java.util.*;
+import java.io.*;
 import java.text.DecimalFormat;
 
 public class DepartmentDA {
-    private HashMap<String, Department> departmentMap;
-
-    DepartmentDA() {
-        this.departmentMap = readDept();
+    public DepartmentDA() { new HashMap<>();
+        readDepartmentFile();
     }
 
-    public HashMap<String, Department> readDept() {
-        HashMap<String, Department> departments = new HashMap<>();
-        try {
-            Scanner departmentFile = new Scanner(new FileReader("dep.csv"));
-            departmentFile.nextLine();
-
+    private void readDepartmentFile() {
+        try (Scanner departmentFile = new Scanner(new FileReader("Dep.csv"))) {
+            departmentFile.nextLine(); 
+    
             while (departmentFile.hasNext()) {
-                String departmentLine = departmentFile.nextLine();
-                String[] depArr = departmentLine.split(",");
+                String[] departmentLineData = departmentFile.nextLine().split(",");
                 Department department = new Department();
-                department.setDepCode(depArr[0].trim());
-                department.setDepName(depArr[1].trim());
-                departments.put(depArr[0].trim(), department);
+                department.setDepCode(departmentLineData[0].trim());
+                department.setDepName(departmentLineData[1].trim());
+                readDepEmp(department); 
+                printDepartment(department);
             }
-
-            departmentFile.close();
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
         }
-        return departments;
     }
 
-    public Employee createEmp(String empNo) {
-        EmployeeDA employeeDA = new EmployeeDA(empNo);
-        return employeeDA.getEmployee();
-    }
+    private void readDepEmp(Department department) {
+        HashMap<String, Employee> employeeMap = new HashMap<>(); 
+        try (Scanner deptEmpFile = new Scanner(new FileReader("DeptEmp.csv"))) {
+            deptEmpFile.nextLine(); 
 
-    public void readDepEmp(Department department) {
-        try {
-            Scanner depEmpFile = new Scanner(new FileReader("deptemp.csv"));
-            depEmpFile.nextLine();
-            HashMap<String, Employee> employeeMap = new HashMap<>();
-            while (depEmpFile.hasNext()) {
-                String depEmpLine = depEmpFile.nextLine();
-                String[] depEmpArr = depEmpLine.split(",");
-                if (department.getDepCode().equals(depEmpArr[0].trim())) {
-                    Employee employee = createEmp(depEmpArr[1].trim());
-                    employee.setSalary(Double.parseDouble(depEmpArr[2]));
-                    employeeMap.put(employee.getEmpNo(), employee);
-                    department.setDepTotalSalary(department.getDepTotalSalary() + employee.getSalary());
+            double totalSalary = 0.0;
+            while (deptEmpFile.hasNext()) {
+                String[] deptEmpLineData = deptEmpFile.nextLine().split(",");
+    
+                if (department.getDepCode().trim().equalsIgnoreCase(deptEmpLineData[0].trim())) {
+                    String empNo = deptEmpLineData[1].trim();
+                    EmployeeDA employeeDA = new EmployeeDA(empNo);
+                    Employee employee = employeeDA.getEmployee();
+                    employee.setSalary(Double.parseDouble(deptEmpLineData[2].trim()));
+    
+                    employeeMap.put(empNo, employee); 
+                    totalSalary += employee.getSalary();
                 }
             }
-            department.setEmpMap(employeeMap);
-            depEmpFile.close();
+            department.setEmpMap(employeeMap); 
+            department.setDepTotalSalary(totalSalary);
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public void produceReports() {
-        for (Map.Entry<String, Department> entry : departmentMap.entrySet()) {
-            Department department = entry.getValue();
-            readDepEmp(department);
-            printDepartment(department);
-        }
-    }
-
-    public void printDepartment(Department department) {
+    private void printDepartment(Department department) {
         DecimalFormat df = new DecimalFormat("#,###.00");
+    
         System.out.println("Department Code: " + department.getDepCode());
         System.out.println("Department Name: " + department.getDepName());
-        System.out.println("Department total Salary: " + df.format(department.getDepTotalSalary()));
-        System.out.println("------------Details----------------");
-        System.out.printf("%-10s %-20s %10s\n", "EmpNo", "EmployeeName", "Salary");
-        for (Map.Entry<String, Employee> entryMap : department.getEmpMap().entrySet()) {
-            Employee employee = entryMap.getValue();
-            System.out.printf("%-10s %-20s %10s\n", entryMap.getKey(),
-            employee.getLastName() + ", " + employee.getFirstName(), df.format(employee.getSalary()));
+        System.out.println("Department Total Salary: " + df.format(department.getDepTotalSalary()));
+        System.out.println("---------------------Details -------------------------");
+        System.out.println("EmpNo\t\tEmployee Name\t\tSalary");
+    
+        for (Map.Entry<String, Employee> entry : department.getEmpMap().entrySet()) {
+            Employee employee = entry.getValue();
+            String empNo = employee.getEmpNo();
+            String employeeName = employee.getLastName() + ", " + employee.getFirstName();
+            String employeeSalary = df.format(employee.getSalary());
+            System.out.printf("%-16s%-24s%s%n", empNo, employeeName, employeeSalary);
         }
         System.out.println();
     }

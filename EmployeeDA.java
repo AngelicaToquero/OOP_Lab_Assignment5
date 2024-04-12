@@ -6,14 +6,14 @@ public class EmployeeDA {
     private Employee employee;
 
     EmployeeDA(String empNo) {
-        this.employee = Employee(empNo);
+        this.employee = readEmployeeFile(empNo);
     }
     
     public Employee getEmployee() {
         return employee;
     }
 
-    public Employee Employee(String empNo) {
+    public Employee readEmployeeFile(String empNo) {
         Employee emp = new Employee();
         try {
             Scanner employeeFile = new Scanner(new FileReader("emp.csv"));
