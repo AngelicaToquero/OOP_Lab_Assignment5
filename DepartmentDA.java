@@ -26,6 +26,8 @@ public class DepartmentDA {
                 department.setDepName(depArr[1].trim());
                 departments.put(depArr[0].trim(), department);
             }
+
+            departmentFile.close();
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
         }
@@ -53,12 +55,13 @@ public class DepartmentDA {
                 }
             }
             department.setEmpMap(employeeMap);
+            depEmpFile.close();
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public void displayReport() {
+    public void produceReports() {
         for (Map.Entry<String, Department> entry : departmentMap.entrySet()) {
             Department department = entry.getValue();
             readDepEmp(department);
@@ -71,13 +74,13 @@ public class DepartmentDA {
         System.out.println("Department Code: " + department.getDepCode());
         System.out.println("Department Name: " + department.getDepName());
         System.out.println("Department total Salary: " + df.format(department.getDepTotalSalary()));
-        System.out.println();
-       
         System.out.println("------------Details----------------");
         System.out.printf("%-10s %-20s %10s\n", "EmpNo", "EmployeeName", "Salary");
         for (Map.Entry<String, Employee> entryMap : department.getEmpMap().entrySet()) {
             Employee employee = entryMap.getValue();
-            System.out.printf("%-10s %-20s %10s\n", entryMap.getKey(), employee.getLastName() + ", " + employee.getFirstName(), df.format(employee.getSalary()));
+            System.out.printf("%-10s %-20s %10s\n", entryMap.getKey(),
+            employee.getLastName() + ", " + employee.getFirstName(), df.format(employee.getSalary()));
         }
+        System.out.println();
     }
 }
